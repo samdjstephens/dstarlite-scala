@@ -20,4 +20,6 @@ class Graph(height: Int, width: Int, walls: Set[Node]) {
     } yield neighbour
     nodes.toList
   }
+
+  def observe: Set[Node] = walls
 }
