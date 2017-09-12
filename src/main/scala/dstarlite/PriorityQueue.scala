@@ -6,11 +6,25 @@ import scala.collection.immutable.SortedSet
 
 class PriorityQueue[T](items: SortedSet[(Key, T)]){
   type QueueItem = (Key, T)
+
   def put(item: QueueItem): PriorityQueue[T] =
     new PriorityQueue[T](items + item)
-//  def pop = ???
+
+  def pop: (T, PriorityQueue[T]) =
+    if (items.isEmpty) throw new NoSuchElementException("PriorityQueue empty!")
+    else (items.head match { case (k, n) => n }, new PriorityQueue[T](items.tail))
+
   def firstKey: Key = items.head match { case (key, _) => key }
+
   def allItems: List[QueueItem] = items.toList
+
+  def contains(item: T): Boolean = {
+    def _itemInList(itemList: List[QueueItem]): Boolean = itemList match {
+      case Nil => false
+      case (_, it) :: rest => if (it == item) true else _itemInList(rest)
+    }
+    _itemInList(allItems)
+  }
 }
 
 object PriorityQueue {
