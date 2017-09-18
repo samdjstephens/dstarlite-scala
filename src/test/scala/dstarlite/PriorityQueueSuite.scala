@@ -64,4 +64,19 @@ class PriorityQueueSuite extends FlatSpec {
     val q = (theQueue put (Key(3,3), Node(3,3))) remove Node (3,3)
     assert (q == theQueue)
   }
+
+  "PriorityQueue.updateKey" must "still contain the node after the update" in {
+    val q = theQueue.updateKey(Node(1, 2), Key(3, 3))
+    assert(q contains Node(1, 2))
+  }
+
+  it must "result put a node at the front of the queue if the new key is smallest" in {
+    val q = theQueue.updateKey(Node(2, 1), Key(0, 1))
+    val (topNode, _) = q.pop
+    assert(topNode == Node(2, 1))
+  }
+
+  it must "throw a NoSuchElementException if the node being updated doesnt exist" in {
+    assertThrows[NoSuchElementException](theQueue updateKey(Node(3, 3), Key(3, 3)))
+  }
 }

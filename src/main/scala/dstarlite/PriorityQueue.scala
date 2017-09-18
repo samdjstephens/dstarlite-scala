@@ -29,7 +29,8 @@ class PriorityQueue[T](val items: SortedSet[(Key, T)]){
   }
 
   def updateKey(node: T, newKey: Key): PriorityQueue[T] = {
-    (this remove node) put (newKey, node)
+    if (!(this contains node)) throw new NoSuchElementException
+    else (this remove node) put (newKey, node)
   }
 
   def ==(other: PriorityQueue[T]): Boolean = {
