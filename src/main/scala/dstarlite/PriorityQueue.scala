@@ -4,7 +4,7 @@ import scala.collection.immutable.SortedSet
 
 
 
-class PriorityQueue[T](items: SortedSet[(Key, T)]){
+class PriorityQueue[T](val items: SortedSet[(Key, T)]){
   type QueueItem = (Key, T)
 
   def put(item: QueueItem): PriorityQueue[T] =
@@ -16,14 +16,24 @@ class PriorityQueue[T](items: SortedSet[(Key, T)]){
 
   def firstKey: Key = items.head match { case (key, _) => key }
 
-  def allItems: List[QueueItem] = items.toList
-
-  def contains(item: T): Boolean = {
+  def contains(node: T): Boolean = {
     def _itemInList(itemList: List[QueueItem]): Boolean = itemList match {
       case Nil => false
-      case (_, it) :: rest => if (it == item) true else _itemInList(rest)
+      case (_, it) :: rest => if (it == node) true else _itemInList(rest)
     }
-    _itemInList(allItems)
+    _itemInList(items.toList)
+  }
+
+  def remove(node: T): PriorityQueue[T] = {
+    new PriorityQueue[T](items filter { case (_, it) => it != node })
+  }
+
+  def updateKey(node: T, newKey: Key): PriorityQueue[T] = {
+    (this remove node) put (newKey, node)
+  }
+
+  def ==(other: PriorityQueue[T]): Boolean = {
+    items == other.items
   }
 }
 

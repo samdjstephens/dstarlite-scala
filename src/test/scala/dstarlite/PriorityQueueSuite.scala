@@ -47,5 +47,21 @@ class PriorityQueueSuite extends FlatSpec {
     assert(!(q2 contains node))
   }
 
-  // TODO: Add test for contains
+  "PriorityQueue.contains" must "return true for a node included in construction" in {
+    assert(theQueue contains Node(1, 2))
+  }
+
+  it must "return true for a node added" in {
+    assert(theQueue contains Node(1, 2))
+  }
+
+  "PriorityQueue.remove" must "result in a queue not containing the node removed" in {
+    val q = theQueue remove Node(1, 2)
+    assert(!(q contains Node(1, 2)))
+  }
+
+  it must "return the original queue if a node is added then removed" in {
+    val q = (theQueue put (Key(3,3), Node(3,3))) remove Node (3,3)
+    assert (q == theQueue)
+  }
 }
