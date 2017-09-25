@@ -8,6 +8,15 @@ class PathState(queue: PriorityQueue[Node],
                 rhsVals: Map[Node, Float],
                 km: Int) {
 
+  def this(newQueue: PriorityQueue[Node]) =
+    this(newQueue, graph, position, goal, gVals, rhsVals, km)
+
+  def this(newGVals: Map[Node, Float]) =
+    this(queue, graph, position, goal, newGVals, rhsVals, km)
+
+  def this(newQueue: PriorityQueue[Node], newGVals: Map[Node, Float]) =
+    this(newQueue, graph, position, goal, newGVals, rhsVals, km)
+
   def heuristic(node: Node, position: Node): Int = {
     Math.abs((node.x - position.x) + (node.y - position.y))
   }
@@ -39,9 +48,9 @@ class PathState(queue: PriorityQueue[Node],
     if (gVals(node) != newRhsVals(node))
       new PathState(
         newQueue.put((calculateKey(node), node)),
-        graph, position, goal, gVals, rhsVals, km
-      )  // TODO: Can I use implicits to sort this out?
-    else new PathState(newQueue, graph, position, goal, gVals, rhsVals, km)
+        graph, position, goal, gVals, newRhsVals, km
+      )
+    else new PathState(newQueue, graph, position, goal, gVals, newRhsVals, km)
   }
 
   private def updateRhs(node: Node): Map[Node, Float] = {
@@ -61,24 +70,19 @@ class PathState(queue: PriorityQueue[Node],
       val kFirstNew = calculateKey(topNode)
 
       if (kFirst < kFirstNew)
-        new PathState(
-          queueWithNew(queueNoTop, topNode),
-          graph, position, goal, gVals, rhsVals, km
-        ).computeShortestPath
+        new PathState(queueWithNew(queueNoTop, topNode)).computeShortestPath
       else if (gVals(topNode) > rhsVals(topNode))
         new PathState(
-          queueNoTop, graph, position, goal,
-          gVals.updated(topNode, rhsVals(topNode)),
-          rhsVals, km
+          queueNoTop,
+          gVals.updated(topNode, rhsVals(topNode))
         ).updateNodes(graph.neighbours(topNode))
-          .computeShortestPath
+         .computeShortestPath
       else
         new PathState(
-          queueNoTop, graph, position, goal,
-          gVals.updated(topNode, Float.PositiveInfinity),
-          rhsVals, km
+          queueNoTop,
+          gVals.updated(topNode, Float.PositiveInfinity)
         ).updateNodes(topNode :: graph.neighbours(topNode))
-          .computeShortestPath
+         .computeShortestPath
     }
   }
 
