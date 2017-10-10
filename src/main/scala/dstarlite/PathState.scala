@@ -8,14 +8,14 @@ class PathState(queue: PriorityQueue[Node],
                 rhsVals: Map[Node, Float],
                 km: Int) {
 
-  def this(newQueue: PriorityQueue[Node]) =
-    this(newQueue, graph, position, goal, gVals, rhsVals, km)
+  def withQueue(newQueue: PriorityQueue[Node]) =
+    new PathState(newQueue, graph, position, goal, gVals, rhsVals, km)
 
-  def this(newGVals: Map[Node, Float]) =
-    this(queue, graph, position, goal, newGVals, rhsVals, km)
+  def withGVals(newGVals: Map[Node, Float]) =
+    new PathState(queue, graph, position, goal, newGVals, rhsVals, km)
 
-  def this(newQueue: PriorityQueue[Node], newGVals: Map[Node, Float]) =
-    this(newQueue, graph, position, goal, newGVals, rhsVals, km)
+  def withRHSVals(newRHSVals: Map[Node, Float]) =
+    new PathState(queue, graph, position, goal, gVals, newRHSVals, km)
 
   def heuristic(node: Node, position: Node): Int = {
     Math.abs((node.x - position.x) + (node.y - position.y))
@@ -27,8 +27,7 @@ class PathState(queue: PriorityQueue[Node],
   }
 
   def lowestCostNeighbour(node: Node): Node = {
-    val nodeLookAhead = lookaheadCost(node)
-    graph.neighbours(node).minBy(nodeLookAhead)
+    graph.neighbours(node).minBy(lookaheadCost(node))
   }
 
   private def lookaheadCost(node: Node)(neighbour: Node) = {
@@ -46,11 +45,13 @@ class PathState(queue: PriorityQueue[Node],
     val newRhsVals = updateRhs(node)
     val newQueue = queue.remove(node)
     if (gVals(node) != newRhsVals(node))
-      new PathState(
-        newQueue.put((calculateKey(node), node)),
-        graph, position, goal, gVals, newRhsVals, km
-      )
-    else new PathState(newQueue, graph, position, goal, gVals, newRhsVals, km)
+      this
+        .withQueue(newQueue.put((calculateKey(node), node)))
+        .withRHSVals(newRhsVals)
+    else
+      this
+        .withQueue(newQueue)
+        .withRHSVals(newRhsVals)
   }
 
   private def updateRhs(node: Node): Map[Node, Float] = {
@@ -70,20 +71,34 @@ class PathState(queue: PriorityQueue[Node],
       val kFirstNew = calculateKey(topNode)
 
       if (kFirst < kFirstNew)
-        new PathState(queueWithNew(queueNoTop, topNode)).computeShortestPath
+        this
+          .withQueue(queueWithNew(queueNoTop, topNode))
+          .computeShortestPath
       else if (gVals(topNode) > rhsVals(topNode))
-        new PathState(
-          queueNoTop,
-          gVals.updated(topNode, rhsVals(topNode))
-        ).updateNodes(graph.neighbours(topNode))
-         .computeShortestPath
+        this
+          .withQueue(queueNoTop)
+          .withGVals(gVals.updated(topNode, rhsVals(topNode)))
+          .updateNodes(graph.neighbours(topNode))
+          .computeShortestPath
       else
-        new PathState(
-          queueNoTop,
-          gVals.updated(topNode, Float.PositiveInfinity)
-        ).updateNodes(topNode :: graph.neighbours(topNode))
-         .computeShortestPath
+        this
+          .withQueue(queueNoTop)
+          .withGVals(gVals.updated(topNode, Float.PositiveInfinity))
+          .updateNodes(topNode :: graph.neighbours(topNode))
+          .computeShortestPath
     }
   }
 
+  def getShortestPath: List[Node] = {
+    def recur(curPos: Node, path: List[Node], recurDepth: Int): List[Node] = {
+      println(curPos)
+      if (recurDepth == 20) throw new Exception("max recur depth exceeded")
+      else if (curPos == goal) goal :: path
+      else {
+        val newPos = lowestCostNeighbour(curPos)
+        recur(newPos, curPos :: path, recurDepth+1)
+      }
+    }
+    recur(position, List.empty, 0)
+  }
 }
