@@ -90,6 +90,7 @@ class PathState(queue: PriorityQueue[Node],
   }
 
   def getShortestPath: List[Node] = {
+    // Doesnt work
     def recur(curPos: Node, path: List[Node], recurDepth: Int): List[Node] = {
       println(curPos)
       if (recurDepth == 20) throw new Exception("max recur depth exceeded")
